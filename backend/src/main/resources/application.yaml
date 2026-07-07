@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: jobportal
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  servlet:
+    multipart:
+      max-file-size: 10MB        # gioi han upload CV/anh
+      max-request-size: 10MB
+  jpa:
+    open-in-view: false          # tat OSIV (chuan data-access)
+    hibernate:
+      ddl-auto: none             # Flyway la nguon chan ly duy nhat cho schema
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  mvc:
+    problemdetails:
+      enabled: true              # bat ProblemDetail (RFC 7807) cho loi API
+
+server:
+  port: ${PORT:8080}
+
+# Cau hinh ung dung (anh xa qua @ConfigurationProperties)
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-me-this-is-a-very-long-dev-secret-key-at-least-256-bits-1234567890}
+    issuer: ${JWT_ISSUER:jobportal-api}
+    audience: ${JWT_AUDIENCE:jobportal-web}
+    expiration-ms: 86400000      # 24h
+  cors:
+    allowed-origins:
+      - ${CORS_ORIGINS:http://localhost:5173}
+  upload:
+    dir: ${UPLOAD_DIR:uploads}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+  seed: false
+
+# Actuator: health check cho deploy
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /v3/api-docs
+    disable-swagger-default-url: true

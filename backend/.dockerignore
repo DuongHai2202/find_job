@@ -1,0 +1,6 @@
+target/
+.idea/
+*.iml
+startup.out.log
+startup.err.log
+uploads/

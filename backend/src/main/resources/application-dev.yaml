@@ -1,0 +1,27 @@
+# Profile DEV dung MySQL de giong moi truong production nhat co the.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/job_portal?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:duongvanhai2202@gmail.com}
+    password: ${MAIL_PASSWORD:pxeeddgvexsiwdf}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+app:
+  seed: ${APP_SEED:true}

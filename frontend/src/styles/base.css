@@ -1,0 +1,194 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--text);
+  background: var(--canvas);
+  font-family: var(--font-body);
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -48px;
+  z-index: 50;
+  min-height: 40px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--text);
+  color: #ffffff;
+  transition: top 160ms ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-top: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.lead,
+.section-description,
+.page-intro__description,
+.panel-description,
+.muted,
+.auth-note,
+.table-note,
+.empty-state p,
+.error-state p {
+  color: var(--text-soft);
+}
+
+.hero-title,
+.page-title,
+.section-title,
+.panel-title,
+.brand__name,
+.job-card__title,
+.company-card__title,
+.stat-card__value,
+.results-meta strong,
+.proof-item strong,
+.insight-card strong {
+  text-wrap: balance;
+}
+
+.hero-title,
+.page-title,
+.section-title {
+  margin: 0;
+  letter-spacing: -0.05em;
+}
+
+.hero-title {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1.05;
+  max-width: 12ch;
+}
+
+.page-title {
+  font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+  line-height: 1.04;
+}
+
+.section-title {
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+  line-height: 1.2;
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.lead {
+  font-size: 1rem;
+  max-width: 58ch;
+}
+
+.brand__name {
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 2.1vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.brand__name-main {
+  color: var(--text);
+}
+
+.brand__name-accent {
+  color: var(--accent);
+  margin-left: 1px;
+}
+
+.brand__logo {
+  width: clamp(168px, 18vw, 210px);
+  height: auto;
+}
+
+.brand__mark {
+  display: block;
+}
+
+.brand__mark--header {
+  width: 36px;
+  height: 36px;
+}
+
+.field label,
+.search-input__label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.section-kicker {
+  width: fit-content;
+  min-height: 28px;
+  padding: 0 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
