@@ -50,6 +50,23 @@ export function CompanyDetailPage() {
     };
   }, [companyId]);
 
+  const { company } = state;
+  const openJobs = state.jobs.length;
+
+  const companyFacts = useMemo(
+    () => {
+      if (!company) return [];
+      return [
+        { label: "Quy mô", value: pickFirstMeaningful(company.companySize) },
+        { label: "Địa điểm", value: pickFirstMeaningful(company.address) },
+        { label: "Website", value: pickFirstMeaningful(company.website) },
+        { label: "Người liên hệ", value: pickFirstMeaningful(company.fullName) },
+        { label: "Email liên hệ", value: pickFirstMeaningful(company.email) },
+      ].filter((item) => isMeaningfulValue(item.value));
+    },
+    [company?.address, company?.companySize, company?.email, company?.fullName, company?.website]
+  );
+
   if (state.loading) {
     return (
       <section className="section">
@@ -67,21 +84,6 @@ export function CompanyDetailPage() {
       </section>
     );
   }
-
-  const { company } = state;
-  const openJobs = state.jobs.length;
-
-  const companyFacts = useMemo(
-    () =>
-      [
-        { label: "Quy mô", value: pickFirstMeaningful(company.companySize) },
-        { label: "Địa điểm", value: pickFirstMeaningful(company.address) },
-        { label: "Website", value: pickFirstMeaningful(company.website) },
-        { label: "Người liên hệ", value: pickFirstMeaningful(company.fullName) },
-        { label: "Email liên hệ", value: pickFirstMeaningful(company.email) },
-      ].filter((item) => isMeaningfulValue(item.value)),
-    [company.address, company.companySize, company.email, company.fullName, company.website]
-  );
 
   const summaryFacts = [
     { value: `${formatCompactNumber(openJobs)}`, label: "Vị trí đang mở" },
