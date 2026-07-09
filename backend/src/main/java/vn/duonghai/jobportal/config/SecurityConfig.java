@@ -27,6 +27,7 @@ import vn.duonghai.jobportal.security.OAuth2AuthenticationFailureHandler;
 import vn.duonghai.jobportal.security.OAuth2AuthenticationSuccessHandler;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -121,9 +122,19 @@ public class SecurityConfig {
 
     private List<String> normalizeOrigins(List<String> origins) {
         return origins.stream()
+                .flatMap(origin -> Arrays.stream(origin.split("[,;\\r\\n]+")))
                 .map(String::trim)
                 .filter(origin -> !origin.isBlank())
+                .map(this::stripWrappingQuotes)
                 .map(origin -> origin.endsWith("/") ? origin.substring(0, origin.length() - 1) : origin)
                 .collect(Collectors.toList());
+    }
+
+    private String stripWrappingQuotes(String origin) {
+        if ((origin.startsWith("\"") && origin.endsWith("\""))
+                || (origin.startsWith("'") && origin.endsWith("'"))) {
+            return origin.substring(1, origin.length() - 1).trim();
+        }
+        return origin;
     }
 }
