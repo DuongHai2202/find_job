@@ -11,8 +11,6 @@ services:
         value: prod
       - key: APP_SEED
         value: false
-      - key: CORS_ORIGINS
-        sync: false
       - key: DB_URL
         sync: false
       - key: DB_USERNAME
@@ -20,6 +18,12 @@ services:
       - key: DB_PASSWORD
         sync: false
       - key: JWT_SECRET
+        sync: false
+      - key: JWT_ISSUER
+        value: jobportal-api
+      - key: JWT_AUDIENCE
+        value: jobportal-web
+      - key: CORS_ORIGINS
         sync: false
       - key: GOOGLE_CLIENT_ID
         sync: false
@@ -29,6 +33,20 @@ services:
         sync: false
       - key: GOOGLE_FRONTEND_FAILURE_URL
         sync: false
+      - key: UPLOAD_PROVIDER
+        value: CLOUDINARY
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        value: jobportal/resumes
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 587
       - key: MAIL_USERNAME
         sync: false
       - key: MAIL_PASSWORD
