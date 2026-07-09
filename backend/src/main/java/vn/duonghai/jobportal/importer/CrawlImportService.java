@@ -14,6 +14,7 @@ import vn.duonghai.jobportal.entity.User;
 import vn.duonghai.jobportal.enums.JobLevel;
 import vn.duonghai.jobportal.enums.JobStatus;
 import vn.duonghai.jobportal.enums.JobType;
+import vn.duonghai.jobportal.enums.EmployerReviewStatus;
 import vn.duonghai.jobportal.enums.Role;
 import vn.duonghai.jobportal.enums.UserStatus;
 import vn.duonghai.jobportal.importer.model.CrawlDataset;
@@ -134,6 +135,7 @@ public class CrawlImportService {
             employer.setCompanySize(normalizationService.normalizeText(record.companySize()));
             employer.setAddress(address);
             employer.setSourceUrl(sourceUrl);
+            employer.setReviewStatus(EmployerReviewStatus.APPROVED);
             employer.setApproved(true);
 
             if (context.applyChanges && isNew) {

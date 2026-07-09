@@ -5,13 +5,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import vn.duonghai.jobportal.entity.Employer;
+import vn.duonghai.jobportal.enums.EmployerReviewStatus;
 
 import java.util.Optional;
 
 /** DAO cho ho so doanh nghiep (khoa chinh = user_id). */
 public interface EmployerRepository extends JpaRepository<Employer, Long> {
 
-    Page<Employer> findByApproved(boolean approved, Pageable pageable);
+    Page<Employer> findByReviewStatus(EmployerReviewStatus reviewStatus, Pageable pageable);
 
     Optional<Employer> findBySourceUrl(String sourceUrl);
 

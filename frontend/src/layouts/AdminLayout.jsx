@@ -7,7 +7,7 @@ export function AdminLayout() {
   const items = [
     { to: "/admin", label: "Tổng quan", end: true },
     { to: "/admin/employer-approvals", label: "Duyệt nhà tuyển dụng" },
-    { to: "/admin/job-moderation", label: "Duyệt tin" },
+    { to: "/admin/job-moderation", label: "Duyệt tin tuyển dụng" },
     { to: "/admin/users", label: "Người dùng" },
     { to: "/admin/categories", label: "Danh mục" },
     { to: "/admin/system-stats", label: "Thống kê" },

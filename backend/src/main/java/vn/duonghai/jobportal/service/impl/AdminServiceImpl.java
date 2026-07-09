@@ -10,7 +10,9 @@ import vn.duonghai.jobportal.dto.response.AdminUserResponse;
 import vn.duonghai.jobportal.dto.response.PageResponse;
 import vn.duonghai.jobportal.entity.Employer;
 import vn.duonghai.jobportal.entity.User;
+import vn.duonghai.jobportal.enums.EmployerReviewStatus;
 import vn.duonghai.jobportal.enums.NotificationType;
+import vn.duonghai.jobportal.enums.Role;
 import vn.duonghai.jobportal.enums.UserStatus;
 import vn.duonghai.jobportal.exception.BusinessException;
 import vn.duonghai.jobportal.repository.EmployerRepository;
@@ -31,28 +33,35 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public PageResponse<AdminEmployerResponse> getPendingEmployers(int page, int size) {
         var pageable = PageableSupport.pageRequest(page, size, Sort.by(Sort.Direction.ASC, "user.createdAt"));
-        var resultPage = employerRepository.findByApproved(false, pageable)
+        var resultPage = employerRepository.findByReviewStatus(EmployerReviewStatus.PENDING, pageable)
                 .map(AdminEmployerResponse::from);
         return PageResponse.from(resultPage);
     }
 
     @Override
     @Transactional
-    public AdminEmployerResponse reviewEmployer(Long employerUserId, boolean approved) {
+    public AdminEmployerResponse reviewEmployer(Long employerUserId, EmployerReviewStatus status) {
+        if (status != EmployerReviewStatus.APPROVED && status != EmployerReviewStatus.REJECTED) {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "Chi cho phep duyet hoac tu choi doanh nghiep");
+        }
+
         Employer employer = employerRepository.findById(employerUserId)
                 .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Khong tim thay doanh nghiep"));
 
-        employer.setApproved(approved);
-        employer.getUser().setStatus(approved ? UserStatus.ACTIVE : UserStatus.LOCKED);
+        employer.setReviewStatus(status);
+        employer.setApproved(status == EmployerReviewStatus.APPROVED);
+        employer.getUser().setStatus(status == EmployerReviewStatus.APPROVED ? UserStatus.ACTIVE : UserStatus.LOCKED);
         Employer saved = employerRepository.save(employer);
 
         notificationService.createNotification(
                 saved.getUserId(),
                 NotificationType.SYSTEM,
-                approved ? "Tai khoan doanh nghiep da duoc duyet" : "Tai khoan doanh nghiep chua duoc duyet",
-                approved
+                status == EmployerReviewStatus.APPROVED
+                        ? "Tai khoan doanh nghiep da duoc duyet"
+                        : "Tai khoan doanh nghiep da bi tu choi",
+                status == EmployerReviewStatus.APPROVED
                         ? "Doanh nghiep cua ban da duoc kich hoat va co the dang tin tuyen dung."
-                        : "Doanh nghiep cua ban chua duoc duyet. Vui long lien he quan tri vien neu can ho tro."
+                        : "Doanh nghiep cua ban chua duoc phe duyet. Vui long lien he quan tri vien neu can ho tro."
         );
 
         return AdminEmployerResponse.from(saved);
@@ -68,9 +77,21 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public AdminUserResponse updateUserStatus(Long userId, UserStatus status) {
+    public AdminUserResponse updateUserStatus(Long actorUserId, Long userId, UserStatus status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Khong tim thay nguoi dung"));
+
+        if (status == UserStatus.LOCKED && actorUserId.equals(userId)) {
+            throw new BusinessException(HttpStatus.CONFLICT, "Khong the tu khoa tai khoan admin dang su dung");
+        }
+
+        if (status == UserStatus.LOCKED
+                && user.getRole() == Role.ADMIN
+                && user.getStatus() == UserStatus.ACTIVE
+                && userRepository.countByRoleAndStatus(Role.ADMIN, UserStatus.ACTIVE) <= 1) {
+            throw new BusinessException(HttpStatus.CONFLICT, "Khong the khoa admin active cuoi cung");
+        }
+
         user.setStatus(status);
         User saved = userRepository.save(user);
 

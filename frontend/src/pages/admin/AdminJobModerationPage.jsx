@@ -10,12 +10,18 @@ export function AdminJobModerationPage() {
   const [state, setState] = useState({
     loading: true,
     error: "",
+    feedback: "",
     data: null,
   });
 
   async function load(targetPage = page) {
     const data = await getJobsForReview({ page: targetPage, size: 10 });
-    setState({ loading: false, error: "", data });
+    setState((current) => ({
+      ...current,
+      loading: false,
+      error: "",
+      data,
+    }));
   }
 
   useEffect(() => {
@@ -25,15 +31,21 @@ export function AdminJobModerationPage() {
       try {
         const data = await getJobsForReview({ page, size: 10 });
         if (!ignore) {
-          setState({ loading: false, error: "", data });
+          setState((current) => ({
+            ...current,
+            loading: false,
+            error: "",
+            data,
+          }));
         }
       } catch (error) {
         if (!ignore) {
-          setState({
+          setState((current) => ({
+            ...current,
             loading: false,
             error: error.response?.data?.message || "Không thể tải hàng duyệt tin tuyển dụng.",
             data: null,
-          });
+          }));
         }
       }
     }
@@ -49,19 +61,28 @@ export function AdminJobModerationPage() {
     try {
       await updateJobStatus(jobId, status);
       await load();
+      setState((current) => ({
+        ...current,
+        feedback: status === "APPROVED" ? "Tin tuyển dụng đã được duyệt." : "Tin tuyển dụng đã được ẩn khỏi khu public.",
+      }));
     } catch (error) {
       setState((current) => ({
         ...current,
-        error: error.response?.data?.message || "Không thể cập nhật trạng thái kiểm duyệt tin.",
+        error: error.response?.data?.message || "Không thể cập nhật trạng thái tin tuyển dụng.",
       }));
     }
   }
 
   return (
     <div className="stack">
-      <PageIntro description="Bảng duyệt này ưu tiên quét nhanh tiêu đề, doanh nghiệp, hạn nộp và trạng thái hiển thị của từng tin tuyển dụng." meta="Quản trị" title="Duyệt tin tuyển dụng" />
+      <PageIntro
+        meta="Quản trị"
+        title="Duyệt tin tuyển dụng"
+        description="Rà soát các tin đang chờ xuất hiện công khai để giữ chất lượng hiển thị và nhịp vận hành ổn định."
+      />
 
-      {state.loading ? <SkeletonBlock lines={7} /> : null}
+      {state.loading ? <SkeletonBlock lines={7} title="Đang tải danh sách tin cần duyệt..." /> : null}
+      {state.feedback ? <div className="message-banner">{state.feedback}</div> : null}
       {state.error ? <ErrorState description={state.error} /> : null}
 
       {!state.loading && !state.error ? (
@@ -72,10 +93,11 @@ export function AdminJobModerationPage() {
                 <div className="table-row admin-table-row admin-table-row--jobs" key={job.id}>
                   <div className="table-cell">
                     <strong>{job.title}</strong>
-                    <span className="muted">{job.employer?.companyName || "Công ty đang cập nhật"}</span>
+                    <span className="muted">{job.employer?.companyName || "Doanh nghiệp đang bổ sung hồ sơ"}</span>
                   </div>
                   <div className="table-cell">
-                    <span>Hạn {formatDate(job.deadline)}</span>
+                    <span>Hạn nộp {formatDate(job.deadline)}</span>
+                    <span className="muted">{job.location || "Địa điểm đang cập nhật"}</span>
                   </div>
                   <div className="table-cell">
                     <StatusBadge value={job.status} />
@@ -85,7 +107,7 @@ export function AdminJobModerationPage() {
                       Duyệt
                     </button>
                     <button className="button button--danger" onClick={() => handleStatus(job.id, "HIDDEN")} type="button">
-                      Ẩn tin
+                      Ẩn
                     </button>
                   </div>
                 </div>
@@ -94,7 +116,10 @@ export function AdminJobModerationPage() {
             <Pagination onPageChange={setPage} page={state.data.page} totalPages={state.data.totalPages} />
           </div>
         ) : (
-          <EmptyState description="Hiện không có tin tuyển dụng nào đang chờ kiểm duyệt." title="Không có tin chờ duyệt" />
+          <EmptyState
+            title="Không có tin đang chờ duyệt"
+            description="Khu vực public hiện không có tin nào cần bạn xử lý thêm ở bước moderation."
+          />
         )
       ) : null}
     </div>

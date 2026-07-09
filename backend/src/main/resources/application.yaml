@@ -18,7 +18,6 @@ spring:
   mvc:
     problemdetails:
       enabled: true              # bat ProblemDetail (RFC 7807) cho loi API
-
 server:
   port: ${PORT:8080}
 
@@ -34,8 +33,22 @@ app:
       - ${CORS_ORIGINS:http://localhost:5173}
   upload:
     dir: ${UPLOAD_DIR:uploads}
+    provider: ${UPLOAD_PROVIDER:LOCAL}
+    cloudinary:
+      cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+      api-key: ${CLOUDINARY_API_KEY:}
+      api-secret: ${CLOUDINARY_API_SECRET:}
+      folder: ${CLOUDINARY_FOLDER:jobportal/resumes}
   google:
     client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    frontend-success-url: ${GOOGLE_FRONTEND_SUCCESS_URL:http://localhost:5173/auth/callback}
+    frontend-failure-url: ${GOOGLE_FRONTEND_FAILURE_URL:http://localhost:5173/login}
+  admin-bootstrap:
+    enabled: ${APP_BOOTSTRAP_ADMIN:false}
+    email: ${APP_BOOTSTRAP_ADMIN_EMAIL:}
+    password: ${APP_BOOTSTRAP_ADMIN_PASSWORD:}
+    full-name: ${APP_BOOTSTRAP_ADMIN_FULL_NAME:Admin JobPortal}
   seed: false
 
 # Actuator: health check cho deploy

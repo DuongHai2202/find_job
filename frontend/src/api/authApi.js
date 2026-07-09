@@ -16,17 +16,12 @@ export async function login(payload) {
   return data;
 }
 
-export async function loginWithGoogle(idToken) {
-  const { data } = await http.post("/auth/google", { idToken });
-  return data;
-}
-
 export async function register(payload) {
   const { data } = await http.post("/auth/register", normalizeRegisterPayload(payload));
   return data;
 }
 
-export async function getGoogleAuthConfig() {
-  const { data } = await http.get("/auth/google/config");
+export async function getAuthProviders() {
+  const { data } = await http.get("/auth/providers");
   return data;
 }

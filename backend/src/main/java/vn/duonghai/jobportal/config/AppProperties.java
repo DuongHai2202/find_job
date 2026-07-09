@@ -16,6 +16,7 @@ public record AppProperties(
         @Valid Cors cors,
         @Valid Upload upload,
         @Valid Google google,
+        @Valid AdminBootstrap adminBootstrap,
         boolean seed
 ) {
 
@@ -30,9 +31,34 @@ public record AppProperties(
     public record Cors(@NotEmpty List<@NotBlank String> allowedOrigins) {
     }
 
-    public record Upload(@NotBlank String dir) {
+    public record Upload(
+            @NotBlank String dir,
+            @NotBlank String provider,
+            @Valid Cloudinary cloudinary
+    ) {
     }
 
-    public record Google(String clientId) {
+    public record Cloudinary(
+            String cloudName,
+            String apiKey,
+            String apiSecret,
+            String folder
+    ) {
+    }
+
+    public record Google(
+            String clientId,
+            String clientSecret,
+            String frontendSuccessUrl,
+            String frontendFailureUrl
+    ) {
+    }
+
+    public record AdminBootstrap(
+            boolean enabled,
+            String email,
+            String password,
+            String fullName
+    ) {
     }
 }

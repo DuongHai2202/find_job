@@ -10,10 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import vn.duonghai.jobportal.config.AppProperties;
-import vn.duonghai.jobportal.dto.request.GoogleLoginRequest;
+import vn.duonghai.jobportal.config.GoogleOAuth2ClientConfig;
 import vn.duonghai.jobportal.dto.request.LoginRequest;
 import vn.duonghai.jobportal.dto.request.RegisterRequest;
 import vn.duonghai.jobportal.dto.response.AuthResponse;
+import vn.duonghai.jobportal.dto.response.AuthProvidersResponse;
 import vn.duonghai.jobportal.service.AuthService;
 
 @RestController
@@ -24,6 +25,13 @@ public class AuthController {
     private final AuthService authService;
     private final AppProperties appProperties;
 
+    @GetMapping("/providers")
+    public AuthProvidersResponse providers() {
+        return new AuthProvidersResponse(
+                GoogleOAuth2ClientConfig.isGoogleOAuthEnabled(appProperties)
+        );
+    }
+
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
@@ -33,18 +41,5 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
-    }
-
-    @PostMapping("/google")
-    public AuthResponse loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
-        return authService.loginWithGoogle(request);
-    }
-
-    @GetMapping("/google/config")
-    public GoogleAuthConfigResponse googleConfig() {
-        return new GoogleAuthConfigResponse(appProperties.google().clientId());
-    }
-
-    public record GoogleAuthConfigResponse(String clientId) {
     }
 }

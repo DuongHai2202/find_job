@@ -5,8 +5,8 @@ export async function getPendingEmployers(params = {}) {
   return data;
 }
 
-export async function reviewEmployer(employerUserId, approved) {
-  const { data } = await http.patch(`/admin/employers/${employerUserId}/approval`, { approved });
+export async function reviewEmployer(employerUserId, status) {
+  const { data } = await http.patch(`/admin/employers/${employerUserId}/approval`, { status });
   return data;
 }
 

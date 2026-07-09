@@ -15,6 +15,8 @@ import vn.duonghai.jobportal.enums.Role;
 import vn.duonghai.jobportal.repository.ApplicationRepository;
 import vn.duonghai.jobportal.repository.CandidateRepository;
 import vn.duonghai.jobportal.repository.ResumeRepository;
+import vn.duonghai.jobportal.service.storage.LocalResumeStorageService;
+import vn.duonghai.jobportal.service.storage.ResumeStorageRegistry;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -43,16 +45,26 @@ class CandidateServiceImplTest {
         var appProperties = new AppProperties(
                 new AppProperties.Jwt("secret-secret-secret-secret-secret-secret", "issuer", "audience", 1000L),
                 new AppProperties.Cors(java.util.List.of("http://localhost:5173")),
-                new AppProperties.Upload(tempDir.toString()),
-                new AppProperties.Google("test-google-client-id"),
+                new AppProperties.Upload(
+                        tempDir.toString(),
+                        "LOCAL",
+                        new AppProperties.Cloudinary(null, null, null, null)
+                ),
+                new AppProperties.Google("test-google-client-id", "test-google-client-secret", "http://localhost:5173/auth/callback", "http://localhost:5173/login"),
+                new AppProperties.AdminBootstrap(false, null, null, null),
                 false
         );
+
+        var storageRegistry = new ResumeStorageRegistry(java.util.List.of(
+                new LocalResumeStorageService(appProperties)
+        ));
 
         candidateService = new CandidateServiceImpl(
                 candidateRepository,
                 resumeRepository,
                 applicationRepository,
-                appProperties
+                appProperties,
+                storageRegistry
         );
     }
 

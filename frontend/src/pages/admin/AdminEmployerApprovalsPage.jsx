@@ -8,12 +8,18 @@ export function AdminEmployerApprovalsPage() {
   const [state, setState] = useState({
     loading: true,
     error: "",
+    feedback: "",
     data: null,
   });
 
   async function load(targetPage = page) {
     const data = await getPendingEmployers({ page: targetPage, size: 10 });
-    setState({ loading: false, error: "", data });
+    setState((current) => ({
+      ...current,
+      loading: false,
+      error: "",
+      data,
+    }));
   }
 
   useEffect(() => {
@@ -23,15 +29,21 @@ export function AdminEmployerApprovalsPage() {
       try {
         const data = await getPendingEmployers({ page, size: 10 });
         if (!ignore) {
-          setState({ loading: false, error: "", data });
+          setState((current) => ({
+            ...current,
+            loading: false,
+            error: "",
+            data,
+          }));
         }
       } catch (error) {
         if (!ignore) {
-          setState({
+          setState((current) => ({
+            ...current,
             loading: false,
-            error: error.response?.data?.message || "Không thể tải hàng duyệt nhà tuyển dụng.",
+            error: error.response?.data?.message || "Không thể tải hàng chờ duyệt nhà tuyển dụng.",
             data: null,
-          });
+          }));
         }
       }
     }
@@ -43,23 +55,35 @@ export function AdminEmployerApprovalsPage() {
     };
   }, [page]);
 
-  async function handleReview(employerUserId, approved) {
+  async function handleReview(employerUserId, status) {
     try {
-      await reviewEmployer(employerUserId, approved);
+      await reviewEmployer(employerUserId, status);
       await load();
+      setState((current) => ({
+        ...current,
+        feedback:
+          status === "APPROVED"
+            ? "Nhà tuyển dụng đã được duyệt và kích hoạt."
+            : "Nhà tuyển dụng đã được chuyển sang trạng thái từ chối.",
+      }));
     } catch (error) {
       setState((current) => ({
         ...current,
-        error: error.response?.data?.message || "Không thể cập nhật quyết định duyệt doanh nghiệp.",
+        error: error.response?.data?.message || "Không thể cập nhật trạng thái duyệt nhà tuyển dụng.",
       }));
     }
   }
 
   return (
     <div className="stack">
-      <PageIntro description="Danh sách này tập trung vào những doanh nghiệp cần được duyệt trước khi tham gia luồng tuyển dụng chính thức." meta="Quản trị" title="Duyệt nhà tuyển dụng" />
+      <PageIntro
+        meta="Quản trị"
+        title="Duyệt nhà tuyển dụng"
+        description="Xử lý các doanh nghiệp mới trước khi họ tham gia đầy đủ vào luồng đăng tin và quản lý ứng viên."
+      />
 
-      {state.loading ? <SkeletonBlock lines={7} /> : null}
+      {state.loading ? <SkeletonBlock lines={7} title="Đang tải hàng chờ duyệt nhà tuyển dụng..." /> : null}
+      {state.feedback ? <div className="message-banner">{state.feedback}</div> : null}
       {state.error ? <ErrorState description={state.error} /> : null}
 
       {!state.loading && !state.error ? (
@@ -69,20 +93,21 @@ export function AdminEmployerApprovalsPage() {
               {state.data.content.map((employer) => (
                 <div className="table-row admin-table-row admin-table-row--approvals" key={employer.id}>
                   <div className="table-cell">
-                    <strong>{employer.companyName || employer.fullName || "Doanh nghiệp đang cập nhật"}</strong>
-                    <span className="muted">{employer.email || "Chưa có email"}</span>
+                    <strong>{employer.companyName || employer.fullName || "Doanh nghiệp đang bổ sung thông tin"}</strong>
+                    <span className="muted">{employer.email || "Chưa có email liên hệ"}</span>
                   </div>
                   <div className="table-cell">
-                    <span>{employer.website || "Chưa có website"}</span>
+                    <span>{employer.companySize || "Quy mô đang cập nhật"}</span>
+                    <span className="muted">{employer.address || "Chưa có địa chỉ rõ ràng"}</span>
                   </div>
                   <div className="table-cell">
-                    <StatusBadge value={employer.approved ? "APPROVED" : "PENDING"} />
+                    <StatusBadge value={employer.reviewStatus || "PENDING"} />
                   </div>
                   <div className="table-actions">
-                    <button className="button button--primary" onClick={() => handleReview(employer.id, true)} type="button">
+                    <button className="button button--primary" onClick={() => handleReview(employer.id, "APPROVED")} type="button">
                       Duyệt
                     </button>
-                    <button className="button button--danger" onClick={() => handleReview(employer.id, false)} type="button">
+                    <button className="button button--danger" onClick={() => handleReview(employer.id, "REJECTED")} type="button">
                       Từ chối
                     </button>
                   </div>
@@ -92,7 +117,10 @@ export function AdminEmployerApprovalsPage() {
             <Pagination onPageChange={setPage} page={state.data.page} totalPages={state.data.totalPages} />
           </div>
         ) : (
-          <EmptyState description="Không còn doanh nghiệp nào trong hàng chờ hiện tại." title="Hàng duyệt đang trống" />
+          <EmptyState
+            title="Không còn nhà tuyển dụng đang chờ"
+            description="Hàng chờ hiện đã trống. Bạn có thể chuyển sang rà soát tin tuyển dụng hoặc kiểm tra danh mục."
+          />
         )
       ) : null}
     </div>

@@ -1,4 +1,9 @@
 package vn.duonghai.jobportal.dto.request;
 
-public record EmployerApprovalRequest(boolean approved) {
+import jakarta.validation.constraints.NotNull;
+import vn.duonghai.jobportal.enums.EmployerReviewStatus;
+
+public record EmployerApprovalRequest(
+        @NotNull EmployerReviewStatus status
+) {
 }

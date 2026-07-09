@@ -32,6 +32,9 @@ public class Resume extends BaseEntity {
     @Column(name = "stored_file_name", length = 255)
     private String storedFileName;
 
+    @Column(name = "external_file_url", length = 500)
+    private String externalFileUrl;
+
     @Column(name = "mime_type", length = 100)
     private String mimeType;
 

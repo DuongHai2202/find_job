@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { DataPanel, EmptyState, ErrorState, PageIntro, SkeletonBlock, StatCard, StatusBadge } from "@/components/ui";
 import { getPendingEmployers, getUsers, getJobsForReview } from "@/api/adminApi";
 import { getCategories } from "@/api/categoryApi";
+import { DataPanel, EmptyState, ErrorState, PageIntro, SkeletonBlock, StatCard, StatusBadge } from "@/components/ui";
 import { formatCompactNumber } from "@/utils/format";
 
 export function AdminDashboardPage() {
@@ -42,7 +42,7 @@ export function AdminDashboardPage() {
         if (!ignore) {
           setState({
             loading: false,
-            error: error.response?.data?.message || "Bảng điều hành quản trị đang tạm chưa tải được đầy đủ. Bạn thử lại sau ít phút nhé.",
+            error: error.response?.data?.message || "Không thể tải bảng điều hành quản trị lúc này.",
             employers: null,
             jobs: null,
             users: null,
@@ -61,31 +61,48 @@ export function AdminDashboardPage() {
   return (
     <div className="stack">
       <PageIntro
-        description="Bảng điều hành này ưu tiên quyết định vận hành: nhìn nhanh hàng chờ, xác định thứ cần duyệt trước và giữ nhịp dữ liệu toàn hệ thống ổn định."
         meta="Không gian quản trị"
         title="Tổng quan vận hành"
+        description="Theo dõi những hàng chờ cần xử lý trước để khu public và khu doanh nghiệp vận hành gọn, đúng nhịp."
       />
 
-      {state.loading ? <SkeletonBlock lines={8} title="Đang tập hợp tín hiệu vận hành toàn hệ thống..." /> : null}
+      {state.loading ? <SkeletonBlock lines={8} title="Đang tập hợp tín hiệu vận hành..." /> : null}
       {state.error ? <ErrorState description={state.error} /> : null}
 
       {!state.loading && !state.error ? (
         <>
           <div className="stats-grid">
-            <StatCard hint="Đây là hàng chờ cần chạm tới trước để không làm chậm trải nghiệm doanh nghiệp mới." label="Nhà tuyển dụng chờ duyệt" value={formatCompactNumber(state.employers?.totalElements || 0)} />
-            <StatCard hint="Những tin này cần được rà lại trước khi xuất hiện công khai với ứng viên." label="Tin chờ kiểm duyệt" tone="accent" value={formatCompactNumber(state.jobs?.totalElements || 0)} />
-            <StatCard hint="Con số này giúp bạn nhìn nhanh quy mô tài khoản đang đi qua hệ thống." label="Người dùng đang hiển thị" value={formatCompactNumber(state.users?.totalElements || 0)} />
-            <StatCard hint="Danh mục rõ ràng giúp bề mặt nội dung của toàn hệ thống ổn định và bớt lệch nhịp." label="Danh mục hiện có" value={formatCompactNumber(state.categories.length)} />
+            <StatCard
+              label="Nhà tuyển dụng chờ duyệt"
+              value={formatCompactNumber(state.employers?.totalElements || 0)}
+              hint="Ưu tiên xử lý sớm để doanh nghiệp mới không bị gián đoạn khi bắt đầu đăng tin."
+            />
+            <StatCard
+              label="Tin chờ kiểm duyệt"
+              value={formatCompactNumber(state.jobs?.totalElements || 0)}
+              tone="accent"
+              hint="Đây là nhóm nội dung đang chờ xuất hiện công khai với ứng viên."
+            />
+            <StatCard
+              label="Người dùng đang hiển thị"
+              value={formatCompactNumber(state.users?.totalElements || 0)}
+              hint="Giúp nhìn nhanh quy mô tài khoản mà khu quản trị đang theo dõi."
+            />
+            <StatCard
+              label="Danh mục hiện có"
+              value={formatCompactNumber(state.categories.length)}
+              hint="Taxonomy gọn và nhất quán sẽ làm cả public lẫn employer editor dễ dùng hơn."
+            />
           </div>
 
           <div className="employer-dashboard-grid">
             <DataPanel
+              title="Nhà tuyển dụng đang chờ"
               action={
                 <Link className="button button--secondary" to="/admin/employer-approvals">
                   Mở hàng duyệt
                 </Link>
               }
-              title="Doanh nghiệp chờ duyệt"
             >
               {state.employers?.content?.length ? (
                 <div className="table-card">
@@ -93,10 +110,10 @@ export function AdminDashboardPage() {
                     <div className="table-row admin-table-row" key={employer.id}>
                       <div className="table-cell">
                         <strong>{employer.companyName || employer.fullName || "Doanh nghiệp đang bổ sung thông tin"}</strong>
-                        <span className="muted">{employer.email || "Chưa có email liên hệ rõ ràng"}</span>
+                        <span className="muted">{employer.email || "Chưa có email liên hệ"}</span>
                       </div>
                       <div className="table-cell">
-                        <StatusBadge value={employer.approved ? "APPROVED" : "PENDING"} />
+                        <StatusBadge value={employer.reviewStatus || "PENDING"} />
                       </div>
                       <div className="table-actions">
                         <Link className="button button--secondary" to="/admin/employer-approvals">
@@ -108,20 +125,20 @@ export function AdminDashboardPage() {
                 </div>
               ) : (
                 <EmptyState
-                  description="Hàng duyệt hiện đang thông thoáng. Đây là lúc tốt để kiểm tra lại các khu vực khác như tin tuyển dụng chờ rà soát hoặc chất lượng danh mục."
-                  title="Không còn doanh nghiệp nào đang chờ"
+                  title="Hàng duyệt đang trống"
+                  description="Hiện không còn doanh nghiệp mới cần bạn xử lý. Đây là lúc phù hợp để rà tiếp phần tin tuyển dụng hoặc danh mục."
                 />
               )}
             </DataPanel>
 
             <div className="stack">
               <DataPanel
+                title="Tin cần rà soát"
                 action={
                   <Link className="button button--secondary" to="/admin/job-moderation">
                     Duyệt tin
                   </Link>
                 }
-                title="Tin cần rà soát"
               >
                 {state.jobs?.content?.length ? (
                   <div className="timeline-list">
@@ -133,19 +150,22 @@ export function AdminDashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <EmptyState description="Hiện chưa có tin nào cần bạn kiểm duyệt ngay. Hệ thống đang ở trạng thái vận hành khá ổn định ở khu vực này." title="Không có tin chờ rà soát" />
+                  <EmptyState
+                    title="Không có tin chờ rà soát"
+                    description="Khu public hiện không có tin nào cần bạn duyệt thêm ở thời điểm này."
+                  />
                 )}
               </DataPanel>
 
-              <DataPanel title="Nguyên tắc vận hành hôm nay">
+              <DataPanel title="Nhịp vận hành hôm nay">
                 <div className="portal-auth__mini-list">
                   <div>
-                    <strong>Ưu tiên những hàng chờ ảnh hưởng trực tiếp đến trải nghiệm người dùng</strong>
-                    <span>Doanh nghiệp mới và tin sắp lên public thường là hai điểm chạm cần được xử lý sớm nhất trong ngày.</span>
+                    <strong>Ưu tiên các hàng chờ tác động trực tiếp đến trải nghiệm người dùng</strong>
+                    <span>Doanh nghiệp mới và tin sắp lên public là hai khu vực nên xử lý trước để tránh làm chậm luồng chính.</span>
                   </div>
                   <div>
-                    <strong>Giữ dữ liệu rõ ràng hơn là thêm nhiều thao tác</strong>
-                    <span>Một quyết định duyệt đúng lúc, một danh mục gọn và một trạng thái tài khoản nhất quán sẽ giúp toàn hệ thống bớt nhiễu hơn rất nhiều.</span>
+                    <strong>Giữ dữ liệu rõ ràng quan trọng hơn thêm nhiều thao tác</strong>
+                    <span>Một quyết định duyệt đúng lúc, một trạng thái tài khoản nhất quán và danh mục gọn sẽ giúp toàn hệ thống dễ kiểm soát hơn.</span>
                   </div>
                 </div>
               </DataPanel>

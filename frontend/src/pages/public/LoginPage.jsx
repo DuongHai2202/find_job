@@ -1,74 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { getGoogleAuthConfig } from "@/api/authApi";
+import { getAuthProviders } from "@/api/authApi";
 import { env } from "@/config/env";
 import { useAuth } from "@/hooks/useAuth";
-
-const GOOGLE_SCRIPT_ID = "google-identity-service";
-
-function loadGoogleScript() {
-  return new Promise((resolve, reject) => {
-    const existingScript = document.getElementById(GOOGLE_SCRIPT_ID);
-    if (existingScript) {
-      if (window.google?.accounts?.id) {
-        resolve(window.google);
-        return;
-      }
-
-      existingScript.addEventListener("load", () => resolve(window.google), {
-        once: true,
-      });
-      existingScript.addEventListener(
-        "error",
-        () => reject(new Error("Không tải được Google Identity Services.")),
-        { once: true },
-      );
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.id = GOOGLE_SCRIPT_ID;
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => resolve(window.google);
-    script.onerror = () =>
-      reject(new Error("Không tải được Google Identity Services."));
-    document.head.appendChild(script);
-  });
-}
-
-function navigateByRole(navigate, role) {
-  if (role === "CANDIDATE") {
-    navigate("/candidate");
-    return;
-  }
-
-  if (role === "EMPLOYER") {
-    navigate("/employer");
-    return;
-  }
-
-  if (role === "ADMIN") {
-    navigate("/admin");
-    return;
-  }
-
-  navigate("/");
-}
+import { getGoogleOAuthErrorMessage, navigateByRole } from "@/utils/auth";
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { login, loginWithGoogle } = useAuth();
-  const googleButtonRef = useRef(null);
+  const { login } = useAuth();
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [submitting, setSubmitting] = useState(false);
-  const [googleSubmitting, setGoogleSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [googleError, setGoogleError] = useState("");
-  const [googleReady, setGoogleReady] = useState(false);
+  const [googleEnabled, setGoogleEnabled] = useState(null);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -89,86 +35,37 @@ export function LoginPage() {
   }
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function setupGoogleLogin() {
-      try {
-        const clientId =
-          env.googleClientId || (await getGoogleAuthConfig()).clientId;
-
-        if (!clientId) {
-          if (!cancelled) {
-            setGoogleError(
-              "Chưa cấu hình GOOGLE_CLIENT_ID cho đăng nhập Google.",
-            );
-          }
-          return;
-        }
-
-        const googleInstance = await loadGoogleScript();
-        if (
-          cancelled ||
-          !googleButtonRef.current ||
-          !googleInstance?.accounts?.id
-        ) {
-          return;
-        }
-
-        googleInstance.accounts.id.initialize({
-          client_id: clientId,
-          callback: async ({ credential }) => {
-            if (!credential) {
-              setGoogleError("Không nhận được mã xác thực từ Google.");
-              return;
-            }
-
-            setGoogleSubmitting(true);
-            setGoogleError("");
-            setError("");
-
-            try {
-              const response = await loginWithGoogle(credential);
-              navigateByRole(navigate, response.user?.role);
-            } catch (requestError) {
-              setGoogleError(
-                requestError.response?.data?.message ||
-                  "Đăng nhập Google chưa thành công.",
-              );
-            } finally {
-              setGoogleSubmitting(false);
-            }
-          },
-        });
-
-        googleButtonRef.current.innerHTML = "";
-        googleInstance.accounts.id.renderButton(googleButtonRef.current, {
-          theme: "outline",
-          size: "large",
-          type: "standard",
-          shape: "pill",
-          text: "signin_with",
-          width: 360,
-        });
-
-        if (!cancelled) {
-          setGoogleReady(true);
-          setGoogleError("");
-        }
-      } catch (setupError) {
-        if (!cancelled) {
-          setGoogleError(
-            setupError.message || "Không khởi tạo được đăng nhập Google.",
-          );
-        }
-      }
+    const searchParams = new URLSearchParams(window.location.search);
+    const oauthError = searchParams.get("google_error");
+    if (oauthError) {
+      setGoogleError(getGoogleOAuthErrorMessage(oauthError));
     }
 
-    setupGoogleLogin();
+    let mounted = true;
+
+    getAuthProviders()
+      .then((providers) => {
+        if (mounted) {
+          setGoogleEnabled(Boolean(providers.googleEnabled));
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setGoogleEnabled(false);
+        }
+      });
 
     return () => {
-      cancelled = true;
+      mounted = false;
     };
-  }, [loginWithGoogle, navigate]);
+  }, []);
+
+  function handleGoogleLogin() {
+    setGoogleError("");
+    setError("");
+    const backendBaseUrl = env.apiUrl.replace(/\/api\/v1\/?$/, "");
+    window.location.assign(`${backendBaseUrl}/oauth2/authorization/google`);
+  }
 
   return (
     <section className="portal-auth portal-auth--joboko">
@@ -227,7 +124,7 @@ export function LoginPage() {
             <div className="button-row">
               <button
                 className="button button--primary"
-                disabled={submitting || googleSubmitting}
+                disabled={submitting}
                 type="submit"
               >
                 {submitting ? "Đang xử lý..." : "Đăng nhập"}
@@ -238,27 +135,31 @@ export function LoginPage() {
             </div>
           </form>
 
-          <div className="portal-auth__divider">
-            <span>Hoặc tiếp tục với Google</span>
-          </div>
-
-          <div className="portal-auth__google">
-            <div
-              aria-busy={googleSubmitting}
-              className={`portal-auth__google-slot${googleReady ? " portal-auth__google-slot--ready" : ""}`}
-              ref={googleButtonRef}
-            />
-            {googleSubmitting ? (
-              <span className="portal-auth__google-note">
-                Đang xác thực tài khoản Google...
-              </span>
-            ) : null}
-            {googleError ? (
-              <div className="message-banner message-banner--error">
-                {googleError}
+          {googleEnabled ? (
+            <>
+              <div className="portal-auth__divider">
+                <span>Hoặc tiếp tục với Google</span>
               </div>
-            ) : null}
-          </div>
+
+              <div className="portal-auth__google">
+                <button
+                  className="button button--secondary"
+                  onClick={handleGoogleLogin}
+                  type="button"
+                >
+                  Tiếp tục với Google
+                </button>
+                <span className="portal-auth__google-note">
+                  Bạn sẽ được chuyển sang Google để xác thực an toàn.
+                </span>
+                {googleError ? (
+                  <div className="message-banner message-banner--error">
+                    {googleError}
+                  </div>
+                ) : null}
+              </div>
+            </>
+          ) : null}
         </div>
 
         <aside className="portal-auth__aside">

@@ -31,6 +31,7 @@ import { HomePage } from "@/pages/public/HomePage";
 import { JobDetailPage } from "@/pages/public/JobDetailPage";
 import { JobsPage } from "@/pages/public/JobsPage";
 import { LoginPage } from "@/pages/public/LoginPage";
+import { OAuthCallbackPage } from "@/pages/public/OAuthCallbackPage";
 import { RegisterPage } from "@/pages/public/RegisterPage";
 import { NotFoundPage } from "@/pages/shared/NotFoundPage";
 import { ProtectedRoute } from "@/routes/ProtectedRoute";
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
       { path: "companies/:companyId", element: <CompanyDetailPage /> },
       { path: "employers", element: <EmployerLandingPage /> },
       { path: "login", element: <LoginPage /> },
+      { path: "auth/callback", element: <OAuthCallbackPage /> },
       { path: "register", element: <RegisterPage /> },
     ],
   },

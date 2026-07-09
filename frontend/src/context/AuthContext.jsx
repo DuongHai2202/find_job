@@ -2,7 +2,6 @@ import { createContext, startTransition, useEffect, useState } from "react";
 
 import {
   login as loginRequest,
-  loginWithGoogle as loginWithGoogleRequest,
   register as registerRequest,
 } from "@/api/authApi";
 import {
@@ -47,17 +46,6 @@ export function AuthProvider({ children }) {
     return response;
   }
 
-  async function loginWithGoogle(idToken) {
-    const response = await loginWithGoogleRequest(idToken);
-    setStoredSession(response.accessToken, response.user);
-    setAuthState({
-      accessToken: response.accessToken,
-      user: response.user,
-      ready: true,
-    });
-    return response;
-  }
-
   async function register(payload) {
     const response = await registerRequest(payload);
     setStoredSession(response.accessToken, response.user);
@@ -78,15 +66,24 @@ export function AuthProvider({ children }) {
     });
   }
 
+  function completeOAuthSession(accessToken, user) {
+    setStoredSession(accessToken, user);
+    setAuthState({
+      accessToken,
+      user,
+      ready: true,
+    });
+  }
+
   return (
     <AuthContext.Provider
       value={{
         ...authState,
         isAuthenticated: Boolean(authState.accessToken && authState.user),
         login,
-        loginWithGoogle,
         register,
         logout,
+        completeOAuthSession,
       }}
     >
       {children}

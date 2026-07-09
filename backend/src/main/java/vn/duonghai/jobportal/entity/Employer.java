@@ -8,12 +8,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
+import vn.duonghai.jobportal.enums.EmployerReviewStatus;
 
 /**
  * Ho so doanh nghiep - mo rong 1-1 cua {@link User}.
- * {@code approved} = da duoc Admin duyet hay chua.
+ * reviewStatus = trang thai duyet cua doanh nghiep.
  */
 @Entity
 @Table(name = "employers")
@@ -53,6 +56,10 @@ public class Employer {
 
     @Column(length = 255)
     private String address;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "review_status", nullable = false, length = 20)
+    private EmployerReviewStatus reviewStatus = EmployerReviewStatus.PENDING;
 
     @Column(nullable = false)
     private boolean approved = false;

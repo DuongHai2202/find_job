@@ -37,6 +37,9 @@ services:
       CORS_ORIGINS: http://localhost:5173
       APP_SEED: "true"
       GOOGLE_CLIENT_ID: ""
+      GOOGLE_CLIENT_SECRET: ""
+      GOOGLE_FRONTEND_SUCCESS_URL: http://localhost:5173/auth/callback
+      GOOGLE_FRONTEND_FAILURE_URL: http://localhost:5173/login
       MAIL_USERNAME: ""
       MAIL_PASSWORD: ""
     ports:
@@ -47,7 +50,6 @@ services:
       context: ./frontend
       args:
         VITE_API_URL: http://localhost:8080/api/v1
-        VITE_GOOGLE_CLIENT_ID: ""
     container_name: findjob-frontend
     restart: unless-stopped
     depends_on:

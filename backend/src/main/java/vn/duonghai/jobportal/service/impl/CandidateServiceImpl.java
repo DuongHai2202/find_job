@@ -2,7 +2,6 @@ package vn.duonghai.jobportal.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,17 +19,13 @@ import vn.duonghai.jobportal.repository.ApplicationRepository;
 import vn.duonghai.jobportal.repository.CandidateRepository;
 import vn.duonghai.jobportal.repository.ResumeRepository;
 import vn.duonghai.jobportal.service.CandidateService;
+import vn.duonghai.jobportal.service.storage.ResumeStorageRegistry;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,12 +33,12 @@ import java.util.UUID;
 public class CandidateServiceImpl implements CandidateService {
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("application/pdf");
-    private static final String STORAGE_PROVIDER = "LOCAL";
 
     private final CandidateRepository candidateRepository;
     private final ResumeRepository resumeRepository;
     private final ApplicationRepository applicationRepository;
     private final AppProperties appProperties;
+    private final ResumeStorageRegistry resumeStorageRegistry;
 
     @Override
     public CandidateProfileResponse getMyProfile(Long candidateUserId) {
@@ -92,18 +87,19 @@ public class CandidateServiceImpl implements CandidateService {
         validateFile(file);
 
         String originalName = sanitizeOriginalFileName(file.getOriginalFilename());
-        String storedFileName = UUID.randomUUID() + ".pdf";
-        storeResumeFile(file, storedFileName);
+        var storageService = resumeStorageRegistry.getByProvider(appProperties.upload().provider());
+        var storedResumeFile = storageService.upload(file, originalName);
 
         Resume resume = new Resume();
         resume.setCandidate(candidate);
         resume.setTitle(title.trim());
         resume.setContent(normalizeNullable(content));
         resume.setOriginalFileName(originalName);
-        resume.setStoredFileName(storedFileName);
+        resume.setStoredFileName(storedResumeFile.storedFileName());
+        resume.setExternalFileUrl(storedResumeFile.externalFileUrl());
         resume.setMimeType(file.getContentType());
         resume.setSizeInBytes(file.getSize());
-        resume.setStorageProvider(STORAGE_PROVIDER);
+        resume.setStorageProvider(storedResumeFile.storageProvider());
 
         Resume savedResume = resumeRepository.save(resume);
         savedResume.setFileUrl(buildDownloadUrl(savedResume.getId()));
@@ -127,7 +123,7 @@ public class CandidateServiceImpl implements CandidateService {
         if (applicationRepository.existsByResume_Id(resumeId)) {
             throw new BusinessException(HttpStatus.CONFLICT, "Khong the xoa CV dang duoc su dung trong ho so ung tuyen");
         }
-        deleteStoredResumeFile(resume.getStoredFileName());
+        deleteStoredResumeFile(resume);
         resumeRepository.delete(resume);
     }
 
@@ -141,7 +137,7 @@ public class CandidateServiceImpl implements CandidateService {
         }
 
         return new ResumeDownload(
-                loadResumeAsResource(resume.getStoredFileName()),
+                loadResumeAsResource(resume),
                 resume.getOriginalFileName() == null ? "resume.pdf" : resume.getOriginalFileName(),
                 resume.getMimeType() == null ? "application/pdf" : resume.getMimeType()
         );
@@ -177,52 +173,18 @@ public class CandidateServiceImpl implements CandidateService {
         }
     }
 
-    private void storeResumeFile(MultipartFile file, String storedFileName) {
-        createResumeDirectory();
-        Path target = getResumeDirectory().resolve(storedFileName).normalize();
-        try (InputStream inputStream = file.getInputStream()) {
-            Files.copy(inputStream, target, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Khong the luu file CV vao bo nho local");
-        }
-    }
-
-    private Resource loadResumeAsResource(String storedFileName) {
-        if (storedFileName == null || storedFileName.isBlank()) {
+    private Resource loadResumeAsResource(Resume resume) {
+        if (resume.getStoredFileName() == null || resume.getStoredFileName().isBlank()) {
             throw new BusinessException(HttpStatus.NOT_FOUND, "CV nay khong co file luu tru");
         }
-        try {
-            Resource resource = new UrlResource(getResumeDirectory().resolve(storedFileName).normalize().toUri());
-            if (!resource.exists() || !resource.isReadable()) {
-                throw new BusinessException(HttpStatus.NOT_FOUND, "Khong tim thay file CV tren bo nho");
-            }
-            return resource;
-        } catch (MalformedURLException ex) {
-            throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Khong the doc file CV");
-        }
+        return resolveStorageService(resume).loadAsResource(resume);
     }
 
-    private void deleteStoredResumeFile(String storedFileName) {
-        if (storedFileName == null || storedFileName.isBlank()) {
+    private void deleteStoredResumeFile(Resume resume) {
+        if (resume.getStoredFileName() == null || resume.getStoredFileName().isBlank()) {
             return;
         }
-        try {
-            Files.deleteIfExists(getResumeDirectory().resolve(storedFileName).normalize());
-        } catch (IOException ex) {
-            throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Khong the xoa file CV local");
-        }
-    }
-
-    private void createResumeDirectory() {
-        try {
-            Files.createDirectories(getResumeDirectory());
-        } catch (IOException ex) {
-            throw new BusinessException(HttpStatus.INTERNAL_SERVER_ERROR, "Khong the khoi tao thu muc luu CV");
-        }
-    }
-
-    private Path getResumeDirectory() {
-        return Paths.get(appProperties.upload().dir()).toAbsolutePath().normalize().resolve("resumes");
+        resolveStorageService(resume).delete(resume);
     }
 
     private String sanitizeOriginalFileName(String originalFileName) {
@@ -239,6 +201,14 @@ public class CandidateServiceImpl implements CandidateService {
 
     private String buildDownloadUrl(Long resumeId) {
         return "/api/v1/resumes/" + resumeId + "/download";
+    }
+
+    private vn.duonghai.jobportal.service.storage.ResumeStorageService resolveStorageService(Resume resume) {
+        String provider = resume.getStorageProvider();
+        if (provider == null || provider.isBlank()) {
+            provider = appProperties.upload().provider();
+        }
+        return resumeStorageRegistry.getByProvider(provider.toUpperCase(Locale.ROOT));
     }
 
     private String normalizeNullable(String value) {

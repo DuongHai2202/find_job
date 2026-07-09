@@ -56,11 +56,11 @@ export function AppHeader() {
             <NavLink className={navClassName} to="/companies">
               Công ty
             </NavLink>
-            {roleHome ? (
+            {/* {roleHome ? (
               <NavLink className={navClassName} to={roleHome}>
                 Workspace
               </NavLink>
-            ) : null}
+            ) : null} */}
           </nav>
 
           <div className="header-actions">
@@ -71,7 +71,7 @@ export function AppHeader() {
                 </span>
                 {roleHome ? (
                   <Button to={roleHome} variant="secondary">
-                    Mở workspace
+                    Hồ Sơ
                   </Button>
                 ) : null}
                 <Button onClick={logout} variant="secondary">

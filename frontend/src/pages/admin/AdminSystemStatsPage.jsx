@@ -59,42 +59,63 @@ export function AdminSystemStatsPage() {
 
   return (
     <div className="stack">
-      <PageIntro description="Màn này tổng hợp các chỉ số quản trị cốt lõi từ những endpoint hiện có, ưu tiên tính quan sát hơn là minh họa màu mè." meta="Quản trị" title="Thống kê hệ thống" />
+      <PageIntro
+        meta="Quản trị"
+        title="Thống kê hệ thống"
+        description="Theo dõi các chỉ số đang có thật từ backend để nắm nhanh áp lực vận hành và độ đầy dữ liệu."
+      />
 
-      {state.loading ? <SkeletonBlock lines={6} /> : null}
+      {state.loading ? <SkeletonBlock lines={6} title="Đang tổng hợp thống kê hệ thống..." /> : null}
       {state.error ? <ErrorState description={state.error} /> : null}
 
       {!state.loading && !state.error ? (
         <>
           <div className="stats-grid">
-            <StatCard hint="Các doanh nghiệp còn chờ xử lý trong hàng duyệt." label="Nhà tuyển dụng chờ duyệt" value={formatCompactNumber(state.employers?.totalElements || 0)} />
-            <StatCard hint="Khối lượng tin đang đợi moderator rà soát." label="Tin chờ kiểm duyệt" tone="accent" value={formatCompactNumber(state.jobs?.totalElements || 0)} />
-            <StatCard hint="Số lượng người dùng trong tập dữ liệu admin hiện truy cập." label="Người dùng" value={formatCompactNumber(state.users?.totalElements || 0)} />
-            <StatCard hint="Tổng taxonomy đang dùng cho tìm kiếm và đăng tin." label="Danh mục" value={formatCompactNumber(state.categories.length)} />
+            <StatCard
+              label="Nhà tuyển dụng chờ duyệt"
+              value={formatCompactNumber(state.employers?.totalElements || 0)}
+              hint="Số doanh nghiệp đang chờ quyết định từ admin."
+            />
+            <StatCard
+              label="Tin chờ kiểm duyệt"
+              value={formatCompactNumber(state.jobs?.totalElements || 0)}
+              tone="accent"
+              hint="Khối lượng nội dung đang chờ hiển thị công khai."
+            />
+            <StatCard
+              label="Người dùng"
+              value={formatCompactNumber(state.users?.totalElements || 0)}
+              hint="Tổng số tài khoản hiện được khu quản trị truy cập."
+            />
+            <StatCard
+              label="Danh mục"
+              value={formatCompactNumber(state.categories.length)}
+              hint="Số danh mục đang dùng để điều hướng và phân loại tin."
+            />
           </div>
 
           <div className="employer-dashboard-grid">
-            <DataPanel title="Diễn giải chỉ số">
+            <DataPanel title="Cách đọc các chỉ số">
               <div className="portal-auth__mini-list">
                 <div>
-                  <strong>Employer approvals</strong>
-                  <span>Phản ánh áp lực xác minh đầu vào của hệ thống tuyển dụng.</span>
+                  <strong>Nhà tuyển dụng chờ duyệt</strong>
+                  <span>Phản ánh lượng hồ sơ doanh nghiệp mới mà admin cần xử lý để không làm chậm đầu vào hệ thống.</span>
                 </div>
                 <div>
-                  <strong>Job moderation</strong>
-                  <span>Cho thấy lượng nội dung đang chờ được phép hiển thị trên khu public.</span>
+                  <strong>Tin chờ kiểm duyệt</strong>
+                  <span>Cho thấy khối lượng nội dung đang đợi xuất hiện trên khu public và cần được kiểm tra trước.</span>
                 </div>
                 <div>
-                  <strong>User inventory</strong>
-                  <span>Giúp theo dõi quy mô tài khoản đang được admin quản trị.</span>
+                  <strong>Người dùng và danh mục</strong>
+                  <span>Hai nhóm số liệu này giúp bạn theo dõi quy mô dữ liệu và độ ổn định của taxonomy hiện tại.</span>
                 </div>
               </div>
             </DataPanel>
 
-            <DataPanel title="Ghi chú">
+            <DataPanel title="Lưu ý vận hành">
               <div className="candidate-form-shell__intro">
-                <strong>Thống kê hiện bám theo các endpoint quản trị đang có.</strong>
-                <span>Khi backend mở thêm số liệu chuyên sâu hơn, màn này có thể mở rộng tiếp mà không cần đổi layout.</span>
+                <strong>Trang này chỉ hiển thị các số liệu đang có endpoint thật.</strong>
+                <span>Khi backend có thêm dữ liệu chuyên sâu hơn, bảng thống kê có thể mở rộng tiếp mà vẫn giữ nguyên hệ giao diện hiện tại.</span>
               </div>
             </DataPanel>
           </div>

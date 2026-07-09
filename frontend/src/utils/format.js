@@ -36,7 +36,7 @@ const enumLabelMap = {
   VIEWED: "Đã xem",
   INTERVIEW: "Mời phỏng vấn",
   ACCEPTED: "Đã nhận",
-  REJECTED: "Chưa phù hợp",
+  REJECTED: "Từ chối",
   NEW_JOB: "Việc làm mới",
   APPLICATION_STATUS: "Cập nhật hồ sơ",
   SYSTEM: "Thông báo hệ thống",

@@ -3,6 +3,7 @@ package vn.duonghai.jobportal.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import vn.duonghai.jobportal.dto.request.UserStatusUpdateRequest;
 import vn.duonghai.jobportal.dto.response.AdminEmployerResponse;
 import vn.duonghai.jobportal.dto.response.AdminUserResponse;
 import vn.duonghai.jobportal.dto.response.PageResponse;
+import vn.duonghai.jobportal.security.AuthenticatedUser;
 import vn.duonghai.jobportal.service.AdminService;
 
 @RestController
@@ -36,9 +38,9 @@ public class AdminController {
     @PatchMapping("/employers/{employerUserId}/approval")
     public AdminEmployerResponse reviewEmployer(
             @PathVariable Long employerUserId,
-            @RequestBody EmployerApprovalRequest request
+            @Valid @RequestBody EmployerApprovalRequest request
     ) {
-        return adminService.reviewEmployer(employerUserId, request.approved());
+        return adminService.reviewEmployer(employerUserId, request.status());
     }
 
     @GetMapping("/users")
@@ -51,9 +53,10 @@ public class AdminController {
 
     @PatchMapping("/users/{userId}/status")
     public AdminUserResponse updateUserStatus(
+            @AuthenticationPrincipal AuthenticatedUser currentUser,
             @PathVariable Long userId,
             @Valid @RequestBody UserStatusUpdateRequest request
     ) {
-        return adminService.updateUserStatus(userId, request.status());
+        return adminService.updateUserStatus(currentUser.id(), userId, request.status());
     }
 }

@@ -1,0 +1,249 @@
+{
+  "info": {
+    "name": "FindJob API",
+    "_postman_id": "e72f55a4-f7d4-4453-9d28-3b5f31a1d9c0",
+    "description": "Collection co ban de kiem tra public API, auth va cac luong chinh cua FindJob.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api/v1" },
+    { "key": "candidateToken", "value": "" },
+    { "key": "employerToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "jobId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Get public jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/jobs?page=0&size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get job detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "{{jobId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            }
+          }
+        },
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register candidate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newcandidate@jobportal.test\",\n  \"password\": \"123456\",\n  \"fullName\": \"Candidate Demo\",\n  \"role\": \"CANDIDATE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login candidate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"candidate@jobportal.test\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login employer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"employer@jobportal.test\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@jobportal.test\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Candidate",
+      "item": [
+        {
+          "name": "Get candidate profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{candidateToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/candidates/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["candidates", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get my applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{candidateToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/applications/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["applications", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get recommendations",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{candidateToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/recommendations/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "recommendations", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employer",
+      "item": [
+        {
+          "name": "Get employer profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{employerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/employers/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["employers", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get employer jobs",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{employerToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/employer",
+              "host": ["{{baseUrl}}"],
+              "path": ["jobs", "employer"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get pending employers",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/employers/pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "employers", "pending"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ package vn.duonghai.jobportal.bootstrap;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import vn.duonghai.jobportal.entity.Resume;
 import vn.duonghai.jobportal.entity.SavedJob;
 import vn.duonghai.jobportal.entity.User;
 import vn.duonghai.jobportal.enums.ApplicationStatus;
+import vn.duonghai.jobportal.enums.EmployerReviewStatus;
 import vn.duonghai.jobportal.enums.JobLevel;
 import vn.duonghai.jobportal.enums.JobStatus;
 import vn.duonghai.jobportal.enums.JobType;
@@ -40,6 +42,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Component
+@Order(0)
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
@@ -180,6 +183,7 @@ public class DataSeeder implements CommandLineRunner {
         employer.setCompanyDescription(companyDescription);
         employer.setCompanySize(companySize);
         employer.setAddress(address);
+        employer.setReviewStatus(EmployerReviewStatus.APPROVED);
         employer.setApproved(true);
         return employerRepository.save(employer);
     }
