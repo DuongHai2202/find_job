@@ -27,6 +27,7 @@ import vn.duonghai.jobportal.security.OAuth2AuthenticationFailureHandler;
 import vn.duonghai.jobportal.security.OAuth2AuthenticationSuccessHandler;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -108,13 +109,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(appProperties.cors().allowedOrigins());
+        configuration.setAllowedOriginPatterns(normalizeOrigins(appProperties.cors().allowedOrigins()));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
 
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    private List<String> normalizeOrigins(List<String> origins) {
+        return origins.stream()
+                .map(String::trim)
+                .filter(origin -> !origin.isBlank())
+                .map(origin -> origin.endsWith("/") ? origin.substring(0, origin.length() - 1) : origin)
+                .collect(Collectors.toList());
     }
 }
