@@ -2,9 +2,9 @@
 # Schema do Flyway quan ly (V1, V2...). Hibernate chi anh xa, khong tu sua bang.
 spring:
   datasource:
-    url: ${DB_URL:jdbc:mysql://root:ihBUCqLuLKtwzEeljfVnnoEhhiFenIxO@hayabusa.proxy.rlwy.net:44684/railway}
+    url: ${DB_URL:jdbc:mysql://root:PxkFjVAVnTjYyOAwKcEwnQfyiIQNNMLe@hayabusa.proxy.rlwy.net:36284/railway}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:ihBUCqLuLKtwzEeljfVnnoEhhiFenIxO}
+    password: ${DB_PASSWORD:PxkFjVAVnTjYyOAwKcEwnQfyiIQNNMLe}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: false

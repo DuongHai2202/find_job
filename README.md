@@ -277,7 +277,7 @@ Smoke test web/security da duoc bo sung cho public jobs, categories, employer pu
 
 ### Backend
 
-- Deploy `backend` len Render hoac Railway
+- Deploy `backend` len Render
 - Co san [render.yaml](/D:/WorkSpace/envCode/findJob/render.yaml) de bootstrap Render nhanh hon
 - Set:
   - `SPRING_PROFILES_ACTIVE=prod`
@@ -285,11 +285,22 @@ Smoke test web/security da duoc bo sung cho public jobs, categories, employer pu
   - `DB_USERNAME`
   - `DB_PASSWORD`
   - `JWT_SECRET`
+  - `JWT_ISSUER`
+  - `JWT_AUDIENCE`
   - `GOOGLE_CLIENT_ID`
   - `GOOGLE_CLIENT_SECRET`
   - `GOOGLE_FRONTEND_SUCCESS_URL=https://your-frontend-domain/auth/callback`
   - `GOOGLE_FRONTEND_FAILURE_URL=https://your-frontend-domain/login`
   - `CORS_ORIGINS=https://your-frontend-domain`
+  - `UPLOAD_PROVIDER=CLOUDINARY`
+  - `CLOUDINARY_CLOUD_NAME`
+  - `CLOUDINARY_API_KEY`
+  - `CLOUDINARY_API_SECRET`
+  - `CLOUDINARY_FOLDER`
+  - `MAIL_HOST`
+  - `MAIL_PORT`
+  - `MAIL_USERNAME`
+  - `MAIL_PASSWORD`
 
 ### Database
 
@@ -297,15 +308,33 @@ Smoke test web/security da duoc bo sung cho public jobs, categories, employer pu
 - Chay Flyway migration tu backend luc startup
 - Co the import them `joboko_manual_seed.sql` neu muon co data demo lon
 
+### Luu tru CV production
+
+- Nen dung `UPLOAD_PROVIDER=CLOUDINARY`
+- Khong nen dung `LOCAL` tren hosting container vi file local co the mat khi service bi tao lai
+
+### Google OAuth production
+
+- Authorized origin:
+  - `https://your-frontend-domain`
+- Redirect URI:
+  - `https://your-backend-domain/login/oauth2/code/google`
+
+Tai lieu trien khai chi tiet nam o [docs/deploy/VERCEL_RENDER_PUBLIC_DEPLOY.md](/D:/WorkSpace/envCode/findJob/docs/deploy/VERCEL_RENDER_PUBLIC_DEPLOY.md).
+
 ## 11. Kiem tra truoc khi public
 
 - Backend start thanh cong
+- `/actuator/health` tra ve `UP`
 - Frontend goi duoc backend
 - Swagger mo duoc
 - Guest xem duoc jobs/categories/company
 - Candidate login va apply duoc
 - Employer xem jobs va applicants duoc
 - Admin xem users/pending employers duoc
+- Google OAuth redirect dung domain production
+- Upload CV production thanh cong
+- Refresh route SPA khong bi 404
 
 ## 12. Build/Test nhanh
 
