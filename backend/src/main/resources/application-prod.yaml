@@ -2,9 +2,9 @@
 # Schema do Flyway quan ly (V1, V2...). Hibernate chi anh xa, khong tu sua bang.
 spring:
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/jobportal?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    url: ${DB_URL:jdbc:mysql://root:ihBUCqLuLKtwzEeljfVnnoEhhiFenIxO@hayabusa.proxy.rlwy.net:44684/railway}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:ihBUCqLuLKtwzEeljfVnnoEhhiFenIxO}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: false
@@ -14,8 +14,8 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
+    username: ${MAIL_USERNAME:duongvanhai}
+    password: ${MAIL_PASSWORD:pxeeddgvexsiwdf}
     properties:
       mail:
         smtp:
