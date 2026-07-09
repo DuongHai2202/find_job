@@ -35,6 +35,12 @@ import java.util.stream.Collectors;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private static final List<String> DEFAULT_ALLOWED_ORIGIN_PATTERNS = List.of(
+            "https://*.vercel.app",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173"
+    );
+
 
     private final AppProperties appProperties;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -121,12 +127,16 @@ public class SecurityConfig {
     }
 
     private List<String> normalizeOrigins(List<String> origins) {
-        return origins.stream()
+        var configuredOrigins = origins.stream()
                 .flatMap(origin -> Arrays.stream(origin.split("[,;\\r\\n]+")))
                 .map(String::trim)
                 .filter(origin -> !origin.isBlank())
                 .map(this::stripWrappingQuotes)
                 .map(origin -> origin.endsWith("/") ? origin.substring(0, origin.length() - 1) : origin)
+                .collect(Collectors.toList());
+
+        return java.util.stream.Stream.concat(configuredOrigins.stream(), DEFAULT_ALLOWED_ORIGIN_PATTERNS.stream())
+                .distinct()
                 .collect(Collectors.toList());
     }
 
